@@ -1,0 +1,43 @@
+Meeting: Q3 Product Review
+ 
+Date: July 18, 2025
+ 
+Attendees:
+ 
+Sarah Chen (Product Manager)
+ 
+David Lee (Lead Developer)
+ 
+Maria Rodriguez (Marketing Lead)
+ 
+John Smith (Sales Manager)
+ 
+[00:00:00] Sarah Chen: Alright, everyone, let's kick off our Q3 product review. Thanks for being here. Our main goal today is to review the progress on the "Project Phoenix" feature, discuss any roadblocks, and align on the launch timeline. David, could you start us off with an update on the development progress?
+ 
+[00:00:35] David Lee: Sure, Sarah. We're currently on track with the backend development for Project Phoenix. The core API functionalities are about 80% complete, and we've started preliminary testing. We anticipate wrapping up the backend by the end of next week. The front-end team has begun work on the user interface, focusing on the new dashboard and reporting features. We're looking good there, but we might need a little extra time for thorough integration testing between the front and back ends.
+ 
+[00:01:20] Sarah Chen: That sounds promising, David. What's your estimate for the full integration and testing phase?
+ 
+[00:01:28] David Lee: I'd say we'll need at least two weeks for comprehensive integration testing, including bug fixes. So, ideally, we're looking at a development complete date around August 9th.
+ 
+[00:01:45] Sarah Chen: Okay, August 9th for dev complete. Maria, how's the marketing strategy shaping up for Project Phoenix?
+ 
+[00:01:55] Maria Rodriguez: We're making excellent progress. The initial messaging framework is finalized, and we've drafted the launch announcement, website copy, and social media assets. We're planning a phased rollout, starting with an early access program for key customers in late August, followed by a general availability launch in mid-September. We're also preparing some case studies based on anticipated early adopter feedback.
+ 
+[00:02:40] Sarah Chen: Mid-September for general availability sounds reasonable, given David's timeline. John, from a sales perspective, what are your thoughts on the proposed launch and any potential challenges or opportunities you foresee?
+ 
+[00:02:58] John Smith: I'm excited about Project Phoenix. The new reporting features, in particular, will be a huge selling point for our enterprise clients. My main concern is ensuring our sales team is fully trained and equipped with compelling demo materials well before the general availability. We'll need a solid training session and updated sales collateral by early September, at the latest. Also, can we get some early access to the demo environment for our top reps?
+ 
+[00:03:45] David Lee: We can definitely prioritize a stable demo environment for sales training. I'll work with my team to get that ready by the last week of August.
+ 
+[00:03:55] Sarah Chen: Perfect. So, to summarize: David, development complete by August 9th, with a demo environment ready for sales by late August. Maria, continue with the marketing plan for a phased rollout, early access in late August, and general availability in mid-September. John, we'll ensure your team gets the training and demo access they need. Any other immediate concerns or questions?
+ 
+[00:04:30] David Lee: Just a quick note: we might need some additional clarity on the integration with the legacy reporting system. It's a minor point, but it could impact the reporting accuracy if not handled correctly.
+ 
+[00:04:45] Sarah Chen: Good point, David. Let's schedule a separate, quick follow-up meeting for just you, me, and perhaps someone from the data team to iron out that legacy integration detail. I'll send out an invite.
+ 
+[00:04:58] Maria Rodriguez: No concerns from my side. Marketing is ready to go once the product is stable.
+ 
+[00:05:05] John Smith: All good here, Sarah. Thanks for the updates.
+ 
+[00:05:10] Sarah Chen: Excellent. Thanks, everyone. We'll reconvene for a quick check-in in two weeks, and I'll send out the invite for the legacy integration discussion. Meeting adjourned.
