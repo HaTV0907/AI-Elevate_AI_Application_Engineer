@@ -1,0 +1,73 @@
+{
+    "Hemoglobin": {
+        "value": 7.4,
+        "unit": "g/dL",
+        "normal_range": "11.5\u201313.5"
+    },
+    "Hematocrit": {
+        "value": 20.6,
+        "unit": "%",
+        "normal_range": "34.0\u201340.0"
+    },
+    "Red blood cell": {
+        "value": 2.05,
+        "unit": "10^6/ml",
+        "normal_range": "3.9\u20135.3"
+    },
+    "White blood cell": {
+        "value": 0.88,
+        "unit": "10^3/\u00b5L",
+        "normal_range": "5.5\u201315.5"
+    },
+    "Platelets": {
+        "value": 56,
+        "unit": "10^3/\u00b5L",
+        "normal_range": "150\u2013450"
+    },
+    "MCV": {
+        "value": 80.5,
+        "unit": "fL",
+        "normal_range": "77\u201395"
+    },
+    "MCH": {
+        "value": 28.9,
+        "unit": "Pg",
+        "normal_range": "24\u201330"
+    },
+    "MCHC": {
+        "value": 35.9,
+        "unit": "%",
+        "normal_range": "31\u201336"
+    },
+    "Eosinophil": {
+        "value": 0,
+        "unit": "%",
+        "normal_range": "0\u20134"
+    },
+    "Rod neutrophil": {
+        "value": 2,
+        "unit": "%",
+        "normal_range": "3\u20135"
+    },
+    "Segmented neutrophil": {
+        "value": 28,
+        "unit": "%",
+        "normal_range": "27\u201355"
+    },
+    "Lymphocyte": {
+        "value": 32,
+        "unit": "%",
+        "normal_range": "36\u201352"
+    },
+    "Monocyte": {
+        "value": 4,
+        "unit": "%",
+        "normal_range": "3\u20138"
+    },
+    "Blast": {
+        "value": 28,
+        "unit": "%",
+        "normal_range": "0"
+    },
+    "patient_id": "143729"
+}
