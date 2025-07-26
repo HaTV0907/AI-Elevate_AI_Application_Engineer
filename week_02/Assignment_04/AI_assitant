@@ -1,0 +1,113 @@
+import os
+from openai import AzureOpenAI
+ 
+# --- 1. Initialize Azure OpenAI Client ---
+# Ensure AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, and AZURE_OPENAI_DEPLOYMENT_NAME are set as environment variables.
+# For example:
+# export AZURE_OPENAI_ENDPOINT="https://YOUR_RESOURCE_NAME.openai.azure.com/"
+# export AZURE_OPENAI_API_KEY="YOUR_API_KEY"
+# export AZURE_OPENAI_DEPLOYMENT_NAME="GPT-4o-mini" # Or your actual deployment name
+ 
+try:
+    client = AzureOpenAI(
+        api_version="2024-07-01-preview",
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    )
+except Exception as e:
+    print(f"Error initializing Azure OpenAI client: {e}")
+    print("Please ensure AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY are set as environment variables.")
+    exit()
+ 
+# --- 2. Few-shot examples for sentiment analysis ---
+# These examples demonstrate the desired output format and reasoning for sentiment analysis.
+# We are providing 3 samples as requested.
+few_shot_examples = [
+    {
+        "role": "user",
+        "content": "Analyze the sentiment of this text: 'I love attending networking events!'"
+    },
+    {
+        "role": "assistant",
+        "content": "Sentiment: Positive. The text expresses enthusiasm and enjoyment regarding networking events."
+    },
+    {
+        "role": "user",
+        "content": "Analyze the sentiment of this text: 'Networking can be really stressful sometimes.'"
+    },
+    {
+        "role": "assistant",
+        "content": "Sentiment: Negative. The text conveys feelings of discomfort and stress associated with networking."
+    },
+    {
+        "role": "user",
+        "content": "Analyze the sentiment of this text: 'The event registration closes tomorrow at 5 PM.'"
+    },
+    {
+        "role": "assistant",
+        "content": "Sentiment: Neutral. The text provides factual information without expressing any strong positive or negative emotion."
+    },
+]
+ 
+# --- 3. Conversation messages setup with system prompt and user questions ---
+# The system prompt sets the persona and overall behavior of the assistant.
+conversation_messages = [
+    {
+        "role": "system",
+        "content": "You are a helpful and detailed event management assistant. Your goal is to provide clear, structured, and context-aware responses."
+    },
+]
+ 
+# Append few-shot examples to the conversation for context.
+# This allows the model to learn the desired sentiment analysis format.
+conversation_messages.extend(few_shot_examples)
+ 
+# --- 4. Add user question with chain-of-thought prompt ---
+# This prompt encourages the AI to reason step-by-step before providing the answer,
+# improving the transparency and quality of the response.
+conversation_messages.append(
+    {
+        "role": "user",
+        "content": (
+            "I'm attending a virtual networking event soon. "
+            "What are some good conversation starters for someone new to virtual networking? "
+            "Explain your reasoning step-by-step, considering the virtual format."
+        ),
+    }
+)
+ 
+# --- 5. Add another user question for sentiment analysis to test few-shot learning ---
+# This message comes after the chain-of-thought prompt, demonstrating how context
+# (including few-shot examples) is maintained across turns.
+conversation_messages.append(
+    {
+        "role": "user",
+        "content": "Also, analyze the sentiment of this feedback: 'The virtual platform was a bit clunky, but the speakers were fantastic!'"
+    }
+)
+ 
+print("--- Sending request to Azure OpenAI ---")
+print("Conversation History:")
+for msg in conversation_messages:
+    print(f"  {msg['role'].capitalize()}: {msg['content']}")
+print("-" * 40)
+ 
+# --- 6. Call Azure OpenAI chat completion with conversation messages ---
+try:
+    response = client.chat.completions.create(
+        # Use the AZURE_OPENAI_DEPLOYMENT_NAME environment variable for the model name.
+        model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+        messages=conversation_messages,
+        temperature=0.7,  # Controls randomness; lower for more deterministic, higher for more creative
+        max_tokens=500,   # Limits the length of the generated response
+    )
+ 
+    # --- 7. Extract and print assistant reply ---
+    assistant_reply = response.choices[0].message.content
+    print("\n--- Assistant Response ---")
+    print(assistant_reply)
+    print("\n--- End of Response ---")
+ 
+except Exception as e:
+    print(f"\nError during API call: {e}")
+    print("Please check your API key, endpoint, and most importantly, ensure the 'model' parameter matches your Azure OpenAI DEPLOYMENT NAME exactly.")

@@ -1,0 +1,34 @@
+Few-shot prompting:
+ 
+How it influences output:   Few-shot prompting works by providing the model with a few examples of input-output pairs that demonstrate the desired behavior or format.
+                            In the Canvas, the few_shot_examples list shows the model how to perform sentiment analysis.
+                            By seeing examples like "Analyze the sentiment of this text: 'I love attending networking events!'" followed by "Sentiment: Positive.
+                            The text expresses enthusiasm and enjoyment...", the model learns the expected structure and reasoning for sentiment analysis.
+                            When a new sentiment analysis request comes in, it tries to mimic the patterns it observed in the examples.
+ 
+Benefit:    It allows you to guide the model towards a specific output format, tone, or task without extensive fine-tuning. 
+            It's particularly useful for tasks that require a structured response or a particular style,
+            like the "Sentiment: [Positive/Negative/Neutral]" format used in the example.
+ 
+Chain-of-thought prompting:
+ 
+Benefits for reasoning tasks: Chain-of-thought prompting encourages the model to break down a complex problem into intermediate steps and show its reasoning process.
+                              By adding phrases like "Explain your reasoning step-by-step" to the prompt,
+                              you instruct the model to articulate its thought process before arriving at the final answer.
+ 
+Benefit:    This approach makes the model's responses more transparent, verifiable, and often more accurate for complex reasoning tasks. It helps the model to "think aloud," 
+            which can lead to better quality and more robust answers, especially when dealing with nuanced or multi-faceted queries.
+ 
+Importance of context via system prompts and conversation history:
+ 
+System prompts: The system role message ("You are a helpful and detailed event management assistant...") establishes the persona, guidelines,
+                and overall behavior for the AI. It sets the stage for the entire conversation, influencing how the model interprets subsequent user inputs
+                and generates responses. It's crucial for defining the AI's role and constraints.
+ 
+Conversation history: By appending all previous messages (system, user, and assistant turns, including few-shot examples) to conversation_messages,
+                      you maintain the conversational context. The model has access to the entire dialogue history, allowing it to understand references,
+                      build upon previous turns, and apply learned behaviors (like the sentiment analysis format from the few-shot examples) consistently
+                      throughout the interaction.
+ 
+Benefit:    Both system prompts and conversation history are vital for creating coherent, relevant, and context-aware conversational AI.
+            They allow the AI to remember past interactions, understand the ongoing topic, and respond in a way that feels natural and helpful within the defined scope.
