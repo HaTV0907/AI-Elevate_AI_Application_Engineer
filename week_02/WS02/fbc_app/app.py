@@ -1,69 +1,94 @@
-import os
-import json
+import os, json
 from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
-from azure_helper import explain_fbc_result
+from PIL import Image
+import pytesseract
+from dotenv import load_dotenv
+from openai import AzureOpenAI
+from pathlib import Path
 
+# Load .env variables
+load_dotenv()
+endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+api_key = os.getenv("AZURE_OPENAI_API_KEY")
+
+# Init Azure client
+client = AzureOpenAI(
+    api_key=api_key,
+    azure_endpoint=endpoint,
+    api_version="2024-07-01-preview"
+)
+
+# Flask setup
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['JSON_FOLDER'] = 'FBC_DB'
-app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
-
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs(app.config['JSON_FOLDER'], exist_ok=True)
+app.config['UPLOAD_FOLDER'] = 'FBC_DB'
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+Path(app.config['UPLOAD_FOLDER']).mkdir(exist_ok=True)
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+    ext = filename.rsplit('.', 1)[-1].lower()
+    return ext in ALLOWED_EXTENSIONS
 
-def extract_fields():
-    # Based on your uploaded image
-    return {
-        "Hemoglobin": {"value": 7.4, "unit": "g/dL", "normal_range": "11.5–13.5"},
-        "Hematocrit": {"value": 20.6, "unit": "%", "normal_range": "34.0–40.0"},
-        "Red blood cell": {"value": 2.05, "unit": "10^6/ml", "normal_range": "3.9–5.3"},
-        "White blood cell": {"value": 0.88, "unit": "10^3/µL", "normal_range": "5.5–15.5"},
-        "Platelets": {"value": 56, "unit": "10^3/µL", "normal_range": "150–450"},
-        "MCV": {"value": 80.5, "unit": "fL", "normal_range": "77–95"},
-        "MCH": {"value": 28.9, "unit": "Pg", "normal_range": "24–30"},
-        "MCHC": {"value": 35.9, "unit": "%", "normal_range": "31–36"},
-        "Eosinophil": {"value": 0, "unit": "%", "normal_range": "0–4"},
-        "Rod neutrophil": {"value": 2, "unit": "%", "normal_range": "3–5"},
-        "Segmented neutrophil": {"value": 28, "unit": "%", "normal_range": "27–55"},
-        "Lymphocyte": {"value": 32, "unit": "%", "normal_range": "36–52"},
-        "Monocyte": {"value": 4, "unit": "%", "normal_range": "3–8"},
-        "Blast": {"value": 28, "unit": "%", "normal_range": "0"}
-    }
+def preprocess_image(image_path):
+    img = Image.open(image_path).convert("L")  # grayscale
+    img = img.point(lambda x: 0 if x < 140 else 255)  # binarize
+    return img
+
+def extract_fbc(image_path):
+    text = pytesseract.image_to_string(Image.open(image_path))
+    print("OCR Output:\n", text)  # Keep this for debugging
+
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    fbc_data = {}
+    for i, line in enumerate(lines):
+        if any(char.isdigit() for char in line):  # crude way to detect value
+            key = lines[i - 1] if i > 0 else f"field_{i}"
+            fbc_data[key] = line
+    return fbc_data
+
+def summarize_fbc(fbc_data):
+    if not fbc_data or len(fbc_data.keys()) == 1:
+        return "Sorry, the image couldn't be interpreted. Please upload a clearer FBC test."
+    message_text = "Patient FBC results:\n"
+    for k, v in fbc_data.items():
+        if k != "patient_id":
+            message_text += f"- {k}: {v}\n"
+    print("Message sent to OpenAI:\n", message_text)
+    response = client.chat.completions.create(
+        model=deployment,
+        messages=[
+            {"role": "system", "content": "You are a medical assistant who explains FBC results in simple, patient-friendly language."},
+            {"role": "user", "content": message_text}
+        ]
+    )
+    return response.choices[0].message.content.strip()
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    message = ""
     explanation = ""
+    error = ""
     if request.method == "POST":
-        file = request.files["image"]
-        if not allowed_file(file.filename):
-            message = "Sorry, we only accept jpg or png format"
+        file = request.files.get("file")
+        if not file or file.filename == "":
+            error = "No file selected"
+        elif not allowed_file(file.filename):
+            error = "Sorry, we only accept jpg or png format"
         else:
             filename = secure_filename(file.filename)
             patient_id = os.path.splitext(filename)[0]
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(image_path)
 
-            fields = extract_fields()
-            fields["patient_id"] = patient_id
+            fbc_data = extract_fbc(image_path)
+            fbc_data["patient_id"] = patient_id
 
-            json_path = os.path.join(app.config['JSON_FOLDER'], f"{patient_id}.json")
-            with open(json_path, "w") as f:
-                json.dump(fields, f, indent=4)
+            with open(os.path.join(app.config['UPLOAD_FOLDER'], f"{patient_id}.json"), "w", encoding="utf-8") as f:
+                json.dump(fbc_data, f, indent=2)
 
-            explanation_lines = []
-            for test, info in fields.items():
-                if test == "patient_id":
-                    continue
-                result = explain_fbc_result(test, info["value"], info["unit"], info["normal_range"])
-                explanation_lines.append(f"{test}: {result}")
-            explanation = "\n\n".join(explanation_lines)
+            explanation = summarize_fbc(fbc_data)
 
-    return render_template("index.html", message=message, explanation=explanation)
+    return render_template("index.html", explanation=explanation, error=error)
 
 if __name__ == "__main__":
     app.run(debug=True)

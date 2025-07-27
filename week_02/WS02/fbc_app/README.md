@@ -5,5 +5,5 @@ AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
 # run
 source .env
 # install requirement packages
-pip install flask python-dotenv openai pillow
+pip install -r requirements.txt
 sudo apt install tesseract-ocr
