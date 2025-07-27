@@ -4,10 +4,10 @@ from openai import AzureOpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
-
+API_VERSION = "2024-07-01-preview" # Ensure this matches your Azure OpenAI API version
 client = AzureOpenAI(
     api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    api_version="2023-07-01",
+    api_version="2024-07-01-preview",
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
 )
 
@@ -44,6 +44,7 @@ def explain_fbc_result(test_name, value, unit, normal_range):
         })}
     ]
 
+    print(messages)
     response = client.chat.completions.create(
         model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
         messages=messages,
@@ -51,4 +52,4 @@ def explain_fbc_result(test_name, value, unit, normal_range):
         function_call="auto"
     )
 
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message.content
