@@ -1,0 +1,21 @@
+log_id,log_entry
+1,Heavy traffic near depot
+2,Customer wasn't available at drop-off
+3,Vehicle broke down mid-delivery
+4,Thunderstorm delayed departure
+5,"Barcode unreadable, needed manual entry"
+6,Driver missed turn and rerouted
+7,"Arrived on schedule, no delay"
+8,Wrong address on package
+9,System reboot caused docking issue
+10,Accident near warehouse caused delay
+11,Late start due to staff confusion
+12,Windstorm disrupted outdoor loading
+13,Scanner error during inventory
+14,Package mixed with wrong batch
+15,Driver forgot to confirm arrival
+16,Navigation system crashed
+17,Customer changed delivery time last minute
+18,Engine warning light triggered mid-trip
+19,Rain made roadside unsafe
+20,Security check took longer than expected
