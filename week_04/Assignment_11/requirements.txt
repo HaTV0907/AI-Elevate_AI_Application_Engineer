@@ -1,0 +1,11 @@
+langchain
+openai
+requests
+tavily-python
+tiktoken
+langchain-openai
+langchain-community
+langchain-tavily
+langgraph
+pyowm
+python-dotenv

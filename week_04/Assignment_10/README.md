@@ -11,5 +11,11 @@ This project demonstrates how to build a semantic product search engine using ve
 ## 🚀 How to Run
 ### 1. Install requirements
     pip install -r requirements.txt
-### 2. Run scripts
+### 2, Create .env file
+ensure your .env file contain below information with your real key
+AZURE_OPENAI_ENDPOINT=https://aiportalapi.stu-platform.live/jpe
+AZURE_OPENAI_API_KEY=sk-
+AZURE_DEPLOYMENT_NAME=text-embedding-3-small
+PINECONE_API_KEY=pcsk_7MzeDz_3u4XbMQs3k3
+### 3. Run scripts
     python main.py
