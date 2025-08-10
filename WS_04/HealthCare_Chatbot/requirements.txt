@@ -1,7 +1,5 @@
-langchain
-langchain-core
-openai
-pinecone-client
-streamlit
-python-dotenv
-tqdm
+langchain==0.0.320
+openai==0.27.8
+streamlit==1.28.2
+python-dotenv==1.0.0
+tiktoken==0.4.0
