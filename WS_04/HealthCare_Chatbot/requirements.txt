@@ -1,0 +1,7 @@
+langchain
+langchain-core
+openai
+pinecone-client
+streamlit
+python-dotenv
+tqdm

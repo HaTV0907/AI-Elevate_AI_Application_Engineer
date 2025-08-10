@@ -1,0 +1,20 @@
+[
+  {
+    "patient_id": "12345",
+    "symptoms": "fever, cough, fatigue",
+    "medications": [
+      {
+        "name": "Paracetamol",
+        "dosage": "500mg",
+        "frequency": "Twice a day"
+      }
+    ],
+    "appointments": [
+      {
+        "doctor": "Dr. Smith",
+        "date": "2025-08-10",
+        "location": "Clinic A"
+      }
+    ]
+  }
+]
