@@ -4,3 +4,4 @@ requests
 Pillow
 pinecone
 openai
+pymupdf
