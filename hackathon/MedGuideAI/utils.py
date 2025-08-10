@@ -1,0 +1,18 @@
+import os
+from dotenv import load_dotenv
+
+def load_config():
+    load_dotenv()
+
+    return {
+        "AZURE_OPENAI_API_KEY": os.getenv("AZURE_OPENAI_API_KEY"),
+        "AZURE_OPENAI_API_ENDPOINT": os.getenv("AZURE_OPENAI_API_ENDPOINT"),
+        "AZURE_OPENAI_DEPLOYMENT_NAME": os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+        "AZURE_OPENAI_API_VERSION": os.getenv("AZURE_OPENAI_API_VERSION"),
+        "AZURE_OPENAI_API_EMBEDDING_KEY": os.getenv("AZURE_OPENAI_API_EMBEDDING_KEY"),
+        "AZURE_OPENAI_API_EMBEDDING_ENDPOINT": os.getenv("AZURE_OPENAI_API_EMBEDDING_ENDPOINT"),
+        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME": os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"),
+        "PINECONE_API_KEY": os.getenv("PINECONE_API_KEY"),
+        "PINECONE_ENV": os.getenv("PINECONE_ENV"),
+        "PINECONE_INDEX_NAME": os.getenv("PINECONE_INDEX_NAME")
+    }

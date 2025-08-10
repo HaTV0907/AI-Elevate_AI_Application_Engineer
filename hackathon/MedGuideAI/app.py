@@ -1,44 +1,21 @@
 import streamlit as st
-import os
 import io
 import base64
 from PIL import Image
-from dotenv import load_dotenv
 import openai
-from pinecone import Pinecone, ServerlessSpec
 
-# Load environment variables
-load_dotenv()
+from utils import load_config
+from vectorDB import init_pinecone, embed_text, store_in_pinecone
 
-# Azure OpenAI config
-AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
-AZURE_OPENAI_API_ENDPOINT = os.getenv("AZURE_OPENAI_API_ENDPOINT")
-AZURE_OPENAI_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
+# Load config
+config = load_config()
 
-# Embedding config
-AZURE_OPENAI_API_EMBEDDING_KEY = os.getenv("AZURE_OPENAI_API_EMBEDDING_KEY")
-AZURE_OPENAI_API_EMBEDDING_ENDPOINT = os.getenv("AZURE_OPENAI_API_EMBEDDING_ENDPOINT")
-AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME")
-
-# Pinecone config
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_ENV = os.getenv("PINECONE_ENV")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
-
-# Initialize Pinecone
-pc = Pinecone(api_key=PINECONE_API_KEY)
-
-# Create index if it doesn't exist
-if PINECONE_INDEX_NAME not in pc.list_indexes().names():
-    pc.create_index(
-        name=PINECONE_INDEX_NAME,
-        dimension=1536,
-        metric="cosine",
-        spec=ServerlessSpec(cloud="aws", region=PINECONE_ENV)
-    )
-
-index = pc.Index(PINECONE_INDEX_NAME)
+# Init Pinecone
+index = init_pinecone(
+    api_key=config["PINECONE_API_KEY"],
+    env=config["PINECONE_ENV"],
+    index_name=config["PINECONE_INDEX_NAME"]
+)
 
 # Streamlit UI
 st.title("🧪 Blood Test Analyzer")
@@ -52,12 +29,10 @@ if uploaded_file:
         st.error("Only PNG or JPEG images are supported.")
         st.stop()
 
-    # Convert image to base64
     buffered = io.BytesIO()
     image.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode()
 
-    # Prepare messages for vision model
     messages = [
         {
             "role": "system",
@@ -77,14 +52,13 @@ if uploaded_file:
     ]
 
     try:
-        # Step 1: Vision model request
         client = openai.OpenAI(
-            base_url=AZURE_OPENAI_API_ENDPOINT,
-            api_key=AZURE_OPENAI_API_KEY
+            base_url=config["AZURE_OPENAI_API_ENDPOINT"],
+            api_key=config["AZURE_OPENAI_API_KEY"]
         )
 
         response = client.chat.completions.create(
-            model=AZURE_OPENAI_DEPLOYMENT_NAME,
+            model=config["AZURE_OPENAI_DEPLOYMENT_NAME"],
             messages=messages,
             temperature=0.3,
             max_tokens=1000
@@ -102,27 +76,14 @@ if uploaded_file:
         st.subheader("📦 JSON Output")
         st.json(json_data)
 
-        # Step 2: Embedding using OpenAI SDK
-        embed_client = openai.OpenAI(
-            base_url=AZURE_OPENAI_API_EMBEDDING_ENDPOINT,
-            api_key=AZURE_OPENAI_API_EMBEDDING_KEY
+        embedding = embed_text(
+            text=explanation,
+            endpoint=config["AZURE_OPENAI_API_EMBEDDING_ENDPOINT"],
+            api_key=config["AZURE_OPENAI_API_EMBEDDING_KEY"],
+            model=config["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"]
         )
 
-        embed_response = embed_client.embeddings.create(
-            model=AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME,
-            input=[explanation]  # ✅ Correct format: list of strings
-        )
-
-        embedding = embed_response.data[0].embedding
-
-        # Step 3: Store in Pinecone
-        index.upsert([
-            {
-                "id": uploaded_file.name,
-                "values": embedding,
-                "metadata": json_data
-            }
-        ])
+        store_in_pinecone(index, uploaded_file.name, embedding, json_data)
 
         st.success("✅ Data stored in Pinecone!")
 
