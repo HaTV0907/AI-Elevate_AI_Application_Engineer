@@ -8,6 +8,7 @@ import json
 import os
 from utils import load_config
 from vectorDB import init_pinecone, embed_text, store_in_pinecone
+import difflib
 
 # Load config
 config = load_config()
@@ -18,6 +19,37 @@ index = init_pinecone(
     env=config["PINECONE_ENV"],
     index_name=config["PINECONE_INDEX_NAME"]
 )
+
+def highlight_diff(text1, text2):
+    diff = difflib.unified_diff(
+        text1.splitlines(),
+        text2.splitlines(),
+        fromfile='Current Report',
+        tofile='Matched Report',
+        lineterm=''
+    )
+    return '\n'.join(diff)
+
+def generate_health_advice(diff_text):
+    prompt = f"""You're a medical assistant. Based on the following differences between two blood test reports:\n{diff_text}\n
+                 Give personalized advice about diet and exercise to improve health outcomes."""
+    
+    client = openai.OpenAI(
+        base_url=config["AZURE_OPENAI_API_ENDPOINT"],
+        api_key=config["AZURE_OPENAI_API_KEY"]
+    )
+
+    response = client.chat.completions.create(
+        model=config["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        messages=[
+            {"role": "system", "content": "You are a helpful medical assistant."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.5,
+        max_tokens=800
+    )
+
+    return response.choices[0].message.content
 
 # --- Helper Functions ---
 def process_pdf(file):
@@ -209,8 +241,12 @@ if uploaded_file:
                 if selected_compare_id:
                     compare_meta = index.fetch([selected_compare_id]).vectors[selected_compare_id].metadata
                     st.subheader("🆚 Comparison")
-                    st.markdown(f"**Current Upload Explanation:** {explanation}")
-                    st.markdown(f"**Matched Report Explanation:** {compare_meta.get('explanation', '')}")
+                    diff_text = highlight_diff(explanation, compare_meta.get("explanation", ""))
+                    st.subheader("🔍 Differences")
+                    st.code(diff_text, language='diff')
+                    advice = generate_health_advice(diff_text)
+                    st.subheader("💡 Diet & Exercise Advice")
+                    st.markdown(advice)
                     st.markdown(f"**Current Source:** `{source_type}`")
                     st.markdown(f"**Matched Source:** `{compare_meta.get('source', '')}`")
             else:
