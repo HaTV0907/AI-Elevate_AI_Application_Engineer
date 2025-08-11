@@ -30,6 +30,24 @@ def highlight_diff(text1, text2):
     )
     return '\n'.join(diff)
 
+def ask_medical_question(question):
+    client = openai.OpenAI(
+        base_url=config["AZURE_OPENAI_API_ENDPOINT"],
+        api_key=config["AZURE_OPENAI_API_KEY"]
+    )
+
+    response = client.chat.completions.create(
+        model=config["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        messages=[
+            {"role": "system", "content": "You are a friendly and knowledgeable medical assistant."},
+            {"role": "user", "content": question}
+        ],
+        temperature=0.5,
+        max_tokens=800
+    )
+
+    return response.choices[0].message.content
+
 def generate_health_advice(diff_text):
     prompt = f"""You're a medical assistant. Based on the following differences between two blood test reports:\n{diff_text}\n
                  Give personalized advice about diet and exercise to improve health outcomes."""
@@ -255,3 +273,23 @@ if uploaded_file:
     except Exception as e:
         st.error("🚨 An error occurred during processing.")
         st.exception(e)
+
+st.markdown("---")
+st.header("💬 Ask the Medical Assistant")
+
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+user_input = st.text_input("Type your question here")
+
+if user_input:
+    response = ask_medical_question(user_input)
+    st.session_state.chat_history.append(("You", user_input))
+    st.session_state.chat_history.append(("Assistant", response))
+
+# Display chat history
+for sender, message in st.session_state.chat_history:
+    if sender == "You":
+        st.markdown(f"**🧍 You:** {message}")
+    else:
+        st.markdown(f"**🤖 Assistant:** {message}")
