@@ -178,6 +178,44 @@ if uploaded_file:
             save_id_locally(uploaded_file.name)
             st.success("✅ Data stored in Pinecone!")
 
+            # Save latest report in session
+            st.session_state["latest_report"] = {
+                "filename": uploaded_file.name,
+                "explanation": explanation,
+                "source": source_type
+            }
+
+            # --- Search and Compare ---
+            st.subheader("🔍 Search Past Reports to Compare")
+
+            search_query = st.text_input("Search by filename or keyword")
+
+            # Load stored report IDs
+            try:
+                with open("stored_ids.json", "r") as f:
+                    all_ids = json.load(f)
+            except:
+                all_ids = []
+
+            # Filter reports by search query
+            matching_ids = []
+            for rid in all_ids:
+                meta = index.fetch([rid]).vectors[rid].metadata
+                if search_query.lower() in rid.lower() or search_query.lower() in meta.get("explanation", "").lower():
+                    matching_ids.append(rid)
+
+            if matching_ids:
+                selected_compare_id = st.selectbox("Select a report to compare", matching_ids)
+                if selected_compare_id:
+                    compare_meta = index.fetch([selected_compare_id]).vectors[selected_compare_id].metadata
+                    st.subheader("🆚 Comparison")
+                    st.markdown(f"**Current Upload Explanation:** {explanation}")
+                    st.markdown(f"**Matched Report Explanation:** {compare_meta.get('explanation', '')}")
+                    st.markdown(f"**Current Source:** `{source_type}`")
+                    st.markdown(f"**Matched Source:** `{compare_meta.get('source', '')}`")
+            else:
+                if search_query:
+                    st.warning("No matching reports found.")
     except Exception as e:
         st.error("🚨 An error occurred during processing.")
         st.exception(e)
