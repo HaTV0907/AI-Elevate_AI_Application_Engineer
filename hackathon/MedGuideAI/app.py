@@ -4,7 +4,8 @@ import base64
 from PIL import Image
 import fitz  # PyMuPDF
 import openai
-
+import json
+import os
 from utils import load_config
 from vectorDB import init_pinecone, embed_text, store_in_pinecone
 
@@ -70,6 +71,20 @@ def process_image(file):
 
     return response.choices[0].message.content
 
+def save_id_locally(file_id):
+    path = "stored_ids.json"
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            ids = json.load(f)
+    else:
+        ids = []
+
+    if file_id not in ids:
+        ids.append(file_id)
+        with open(path, "w") as f:
+            json.dump(ids, f)
+
+
 def explain_text(text):
     client = openai.OpenAI(
         base_url=config["AZURE_OPENAI_API_ENDPOINT"],
@@ -100,21 +115,21 @@ st.title("🧪 Blood Test Analyzer")
 
 # Sidebar: Browse stored reports
 st.sidebar.title("📁 Past Reports")
+
 try:
-    index_stats = index.describe_index_stats()
-    namespaces = index_stats.namespaces or {}
-    default_namespace = namespaces.get("") or {}
-    report_ids = list(default_namespace.keys()) if isinstance(default_namespace, dict) else []
-except Exception:
+    with open("stored_ids.json", "r") as f:
+        report_ids = json.load(f)
+except:
     report_ids = []
 
 if report_ids:
     selected_id = st.sidebar.selectbox("Select a report to view", report_ids)
     if selected_id:
         selected_meta = index.fetch([selected_id]).vectors[selected_id].metadata
-        st.sidebar.markdown(f"**Filename:** {selected_meta.get('filename')}")
-        st.sidebar.markdown(f"**Source:** {selected_meta.get('source')}")
-        st.sidebar.text_area("Explanation", selected_meta.get("explanation", ""), height=200)
+        st.subheader(f"📄 Viewing: {selected_id}")
+        st.markdown(f"**Filename:** `{selected_meta.get('filename')}`")
+        st.markdown(f"**Source:** `{selected_meta.get('source')}`")
+        st.text_area("Explanation", selected_meta.get("explanation", ""), height=300)
 else:
     st.sidebar.write("🗂️ No reports found yet.")
 
@@ -160,6 +175,7 @@ if uploaded_file:
             )
 
             store_in_pinecone(index, uploaded_file.name, embedding, json_data)
+            save_id_locally(uploaded_file.name)
             st.success("✅ Data stored in Pinecone!")
 
     except Exception as e:
