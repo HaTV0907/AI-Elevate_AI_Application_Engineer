@@ -35,3 +35,7 @@ def store_in_pinecone(index, file_id, embedding, metadata):
             "metadata": metadata
         }
     ])
+
+def search_similar(index, embedding, top_k=1):
+    results = index.query(vector=embedding, top_k=top_k, include_metadata=True)
+    return results.matches
