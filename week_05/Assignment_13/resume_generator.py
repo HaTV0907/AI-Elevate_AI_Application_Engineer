@@ -15,8 +15,7 @@ class LlamaModel:
         try:
             self.llm = Llama.from_pretrained(
                                             repo_id="HeRksTAn/Meta-Llama-3-8B-Instruct-Q4_K_S-GGUF",
-                                            filename="meta-llama-3-8b-instruct-q4_k_s.gguf",
-                                        )
+                                            filename="meta-llama-3-8b-instruct-q4_k_s.gguf",)
 
             print(f"✅ LLaMA model loaded from {model_path}")
         except Exception as e:
@@ -26,7 +25,7 @@ class LlamaModel:
         max_tokens = int(os.getenv("MAX_TOKENS", 300))
         temperature = float(os.getenv("TEMPERATURE", 0.7))
         try:
-            output = self.llm(prompt, max_tokens=max_tokens, temperature=temperature)
+            output = self.llm.create_chat_completion(prompt, max_tokens=max_tokens, temperature=temperature)
             return output['choices'][0]['text'].strip()
         except Exception as e:
             raise RuntimeError(f"Text generation failed: {e}")
